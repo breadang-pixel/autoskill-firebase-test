@@ -135,6 +135,70 @@
       text-align: center;
     }
   </style>
+
+<!-- AutoSkill Firebase START -->
+<script type="module">
+  import { initializeApp }      from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, getDocs,
+    doc, updateDoc, deleteDoc,
+    query, orderBy, limit, where,
+    serverTimestamp, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey:            "AIzaSyBWBKh-HEdDCkEhGbOsY_1_bxTNLRlsLoY",
+    authDomain:        "dashboard-data-d7075.firebaseapp.com",
+    projectId:         "dashboard-data-d7075",
+    storageBucket:     "dashboard-data-d7075.firebasestorage.app",
+    messagingSenderId: "771926682055",
+    appId:             "1:771926682055:web:372fd4fb383180da6151e2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  window.__db         = db;
+  window.__collection = "skill-data";
+  window.__firebase   = { collection, addDoc, getDocs, doc, updateDoc, deleteDoc,
+                          query, orderBy, limit, where, serverTimestamp, onSnapshot };
+
+  window.saveData = async function(data, col) {
+    const c = col || "skill-data";
+    const ref = await addDoc(collection(db, c), {
+      ...data,
+      _createdAt: serverTimestamp(),
+      _source:    window.location.href,
+      _project:   "autoskill-firebase-test"
+    });
+    console.log("Firestore saved [" + c + "] id:" + ref.id);
+    return ref.id;
+  };
+
+  window.loadData = async function(col, max) {
+    const c  = col  || "skill-data";
+    const n  = max  || 100;
+    const q  = query(collection(db, c), orderBy("_createdAt","desc"), limit(n));
+    const sn = await getDocs(q);
+    return sn.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+  };
+
+  window.listenData = function(callback, col) {
+    const c = col || "skill-data";
+    const q = query(collection(db, c), orderBy("_createdAt","desc"), limit(50));
+    return onSnapshot(q, function(sn){
+      callback(sn.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); }));
+    });
+  };
+
+  window.deleteData = async function(docId, col) {
+    const c = col || "skill-data";
+    await deleteDoc(doc(db, c, docId));
+  };
+
+  console.log("Firebase Firestore ready | project: dashboard-data-d7075 | collection: skill-data");
+</script>
+<!-- AutoSkill Firebase END -->
 </head>
 <body>
 
